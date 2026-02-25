@@ -1,0 +1,18 @@
+name: go_guardian
+description: NestJS-style declarative route guards for GoRouter. Declare guards at the route level, inherit through shells, compose with existing redirect logic.
+version: 0.2.0
+homepage: https://github.com/vipinvkmenon/go_guardian
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  go_router: '>=13.0.0 <16.0.0'
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
