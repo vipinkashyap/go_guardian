@@ -167,14 +167,16 @@ expect(result, isNull); // null = allowed
 
 ## Example app
 
-The [`example/`](example/) folder is a runnable Flutter app where you start as a guest and progressively unlock access — login, onboarding, admin promotion, and maintenance mode. It demonstrates guard inheritance, `DiscardedRoute`, and debug logging across four small files:
+The [`example/`](example/) folder is an "everything demo" — start as a guest and progressively unlock access. Each tab showcases a different feature:
 
-| File | Purpose |
+| Tab | Feature |
 |---|---|
-| `main.dart` | App entry point and debug observer setup |
-| `src/services.dart` | `AuthService` and `AppConfig` singletons |
-| `src/router.dart` | Full `GoRouter` config with guards |
-| `src/screens.dart` | All UI screens |
+| Admin | `RoleGuard` + `GuardMeta` |
+| Premium | Custom `PremiumGuard` (extends `RouteGuard`) |
+| VIP | Guard composition: `RoleGuard \| PremiumGuard` |
+| Settings | `GuardChain` brownfield migration |
+
+Plus `DiscardedRoute` on login, `OnboardingGuard` redirect, `MaintenanceGuard`, deep link preservation (`?continue=`), `GuardedShellRoute` inheritance, and `DebugGuardObserver` logging.
 
 ## Requirements
 

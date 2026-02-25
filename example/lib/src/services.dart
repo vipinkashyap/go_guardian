@@ -10,11 +10,13 @@ class AuthService extends ChangeNotifier {
   Set<String> _roles = {};
   bool _onboarded = false;
   bool _loggedIn = false;
+  bool _isPremium = false;
 
   String get userName => _userName;
   Set<String> get roles => _roles;
   bool get isOnboarded => _onboarded;
   bool get isLoggedIn => _loggedIn;
+  bool get isPremium => _isPremium;
 
   bool hasAnyRole(List<String> required) =>
       required.any((r) => _roles.contains(r));
@@ -24,6 +26,7 @@ class AuthService extends ChangeNotifier {
     _roles = {'user'};
     _onboarded = false;
     _loggedIn = true;
+    _isPremium = false;
     notifyListeners();
   }
 
@@ -42,11 +45,17 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void togglePremium() {
+    _isPremium = !_isPremium;
+    notifyListeners();
+  }
+
   void logout() {
     _userName = '';
     _roles = {};
     _onboarded = false;
     _loggedIn = false;
+    _isPremium = false;
     notifyListeners();
   }
 }
