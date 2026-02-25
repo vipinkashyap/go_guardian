@@ -527,9 +527,10 @@ void main() {
       );
       await _pumpRouter(tester, router);
 
-      expect(capturedRedirect, contains('/login'));
-      expect(capturedRedirect, contains('continue'));
-      expect(capturedRedirect, contains('/dashboard/settings'));
+      expect(capturedRedirect, isNotNull);
+      final uri = Uri.parse(capturedRedirect!);
+      expect(uri.path, '/login');
+      expect(uri.queryParameters['continue'], '/dashboard/settings');
     });
 
     testWidgets('authenticated user passes through', (tester) async {

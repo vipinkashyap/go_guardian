@@ -89,8 +89,10 @@ void main() {
       );
       final harness = GuardTestHarness(path: '/dashboard/settings');
       final result = await harness.check(guard);
-      expect(result, contains('continue'));
-      expect(result, contains('/dashboard/settings'));
+      expect(result, isNotNull);
+      final uri = Uri.parse(result!);
+      expect(uri.path, '/login');
+      expect(uri.queryParameters['continue'], '/dashboard/settings');
     });
 
     test('RoleGuard.stateless allows matching role', () async {
@@ -179,7 +181,10 @@ void main() {
       final harness = GuardTestHarness()
           .withPath('/admin/users');
       final result = await harness.check(guard);
-      expect(result, contains('/admin/users'));
+      expect(result, isNotNull);
+      final uri = Uri.parse(result!);
+      expect(uri.path, '/login');
+      expect(uri.queryParameters['continue'], '/admin/users');
     });
 
     test('withQueryParams sets query params', () async {
