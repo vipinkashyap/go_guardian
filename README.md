@@ -20,7 +20,7 @@ GuardedRoute(
 
 ```yaml
 dependencies:
-  go_guardian: ^0.2.0
+  go_guardian: ^0.2.1
 ```
 
 One import gives you everything — `go_guardian` re-exports `go_router`:
@@ -55,14 +55,24 @@ GuardedRoute(
 
 ```dart
 GuardedShellRoute(
-  guards: [AuthGuard.stateless(isAuthenticated: () => auth.isLoggedIn)],
+  guards: [
+    AuthGuard.stateless(isAuthenticated: () => auth.isLoggedIn),
+    OnboardingGuard.stateless(isOnboarded: () => auth.isOnboarded),
+  ],
   builder: (ctx, state, child) => AppShell(child: child),
   routes: [
-    GuardedRoute(path: '/home', ...),   // inherits AuthGuard
-    GuardedRoute(path: '/profile', ...), // inherits AuthGuard
+    GuardedRoute(path: '/home', ...),   // inherits Auth + Onboarding
+    GuardedRoute(path: '/profile', ...), // inherits Auth + Onboarding
+    GuardedRoute(
+      path: '/admin',
+      guards: [RoleGuard(...)],         // inherits Auth + Onboarding + own RoleGuard
+    ),
+    GoRoute(path: '/about', ...),       // plain GoRoute — NOT affected
   ],
 )
 ```
+
+Shell guards are prepended to each child `GuardedRoute`'s own guards at construction time. Plain `GoRoute` children opt out of the guard system.
 
 **4. Redirect *away* from routes with `DiscardedRoute`:**
 
@@ -167,16 +177,22 @@ expect(result, isNull); // null = allowed
 
 ## Example app
 
-The [`example/`](example/) folder is an "everything demo" — start as a guest and progressively unlock access. Each tab showcases a different feature:
+The [`example/`](example/) folder is an "everything demo" — start as a guest and progressively unlock access:
 
-| Tab | Feature |
+**Flow:** Login → OnboardingGuard redirects to `/onboarding` → Complete → Home (with toggles for every guard)
+
+| Tab / Screen | Feature |
 |---|---|
+| Login | `DiscardedRoute` + deep link `?continue=` banner |
+| Onboarding | `OnboardingGuard` redirect (via shell inheritance) |
+| Home | Inherited shell guards, toggle controls, access status |
 | Admin | `RoleGuard` + `GuardMeta` |
 | Premium | Custom `PremiumGuard` (extends `RouteGuard`) |
 | VIP | Guard composition: `RoleGuard \| PremiumGuard` |
 | Settings | `GuardChain` brownfield migration |
+| Maintenance | `MaintenanceGuard` (priority -10) |
 
-Plus `DiscardedRoute` on login, `OnboardingGuard` redirect, `MaintenanceGuard`, deep link preservation (`?continue=`), `GuardedShellRoute` inheritance, and `DebugGuardObserver` logging.
+Also demonstrates `GuardRefreshNotifier`, `DebugGuardObserver`, and shell guard inheritance.
 
 ## Requirements
 

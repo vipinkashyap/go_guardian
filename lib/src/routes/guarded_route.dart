@@ -39,7 +39,7 @@ class GuardedRoute extends GoRoute {
     super.onExit,
     this.guards = const [],
     this.guardMeta = GuardMeta.empty,
-    GoRouterRedirect? existingRedirect,
+    this.existingRedirect,
   }) : super(
           redirect: (BuildContext context, GoRouterState state) {
             return _evaluateGuards(
@@ -57,6 +57,12 @@ class GuardedRoute extends GoRoute {
 
   /// Metadata passed to guards during evaluation.
   final GuardMeta guardMeta;
+
+  /// Optional existing redirect to preserve alongside guard logic.
+  ///
+  /// Called after all guards pass. Stored as a field so that
+  /// [GuardedShellRoute] can recover it when propagating inherited guards.
+  final GoRouterRedirect? existingRedirect;
 
   static FutureOr<String?> _evaluateGuards({
     required BuildContext context,

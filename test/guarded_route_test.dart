@@ -214,8 +214,8 @@ void main() {
 
   group('GuardedShellRoute inheritance', () {
     testWidgets('child routes inherit shell guards', (tester) async {
-      // Here we test that shell guards apply by using GuardedRoute inside
-      // GuardedShellRoute. The shell's AuthGuard should block /child.
+      // The child route has NO guards of its own — the shell's AuthGuard
+      // should be inherited and block /child.
       final router = GoRouter(
         initialLocation: '/child',
         routes: [
@@ -223,13 +223,9 @@ void main() {
             guards: [_SimpleAuthGuard(loggedIn: false)],
             builder: (_, __, child) => child,
             routes: [
-              // The child route itself has no guards, but the redirect
-              // on GuardedRoute evaluates its own guards.
-              // Shell guard inheritance works via GuardRegistry at the
-              // router level.
               GuardedRoute(
                 path: '/child',
-                guards: [_SimpleAuthGuard(loggedIn: false)],
+                // No guards here — inherited from shell
                 builder: (_, __) => const Text('child'),
               ),
             ],
@@ -244,7 +240,68 @@ void main() {
       expect(find.text('login'), findsOneWidget);
     });
 
+    testWidgets('child routes allow when inherited guards pass',
+        (tester) async {
+      final router = GoRouter(
+        initialLocation: '/child',
+        routes: [
+          GuardedShellRoute(
+            guards: [_SimpleAuthGuard(loggedIn: true)],
+            builder: (_, __, child) => child,
+            routes: [
+              GuardedRoute(
+                path: '/child',
+                builder: (_, __) => const Text('child'),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/login',
+            builder: (_, __) => const Text('login'),
+          ),
+        ],
+      );
+      await _pumpRouter(tester, router);
+      expect(find.text('child'), findsOneWidget);
+    });
+
+    testWidgets('child own guards combine with inherited guards',
+        (tester) async {
+      // Shell provides AuthGuard (passes), child adds RoleGuard (fails).
+      final router = GoRouter(
+        initialLocation: '/admin',
+        routes: [
+          GuardedShellRoute(
+            guards: [_SimpleAuthGuard(loggedIn: true)],
+            builder: (_, __, child) => child,
+            routes: [
+              GuardedRoute(
+                path: '/admin',
+                guards: [_SimpleRoleGuard(userRoles: {'user'})],
+                guardMeta: const GuardMeta({'roles': ['admin']}),
+                builder: (_, __) => const Text('admin'),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/login',
+            builder: (_, __) => const Text('login'),
+          ),
+          GoRoute(
+            path: '/unauthorized',
+            builder: (_, __) => const Text('unauthorized'),
+          ),
+        ],
+      );
+      await _pumpRouter(tester, router);
+      // Auth passes, but role check fails → unauthorized
+      expect(find.text('unauthorized'), findsOneWidget);
+    });
+
     testWidgets('nested shells accumulate guards', (tester) async {
+      // Outer shell: AuthGuard (passes)
+      // Inner shell: RoleGuard (fails — user has 'user', needs 'admin')
+      // Child: no guards of its own
       final router = GoRouter(
         initialLocation: '/inner',
         routes: [
@@ -261,10 +318,7 @@ void main() {
                 routes: [
                   GuardedRoute(
                     path: '/inner',
-                    guards: [
-                      _SimpleRoleGuard(userRoles: {'user'}),
-                    ],
-                    guardMeta: const GuardMeta({'roles': ['admin']}),
+                    // No guards — inherits Auth + Role from shells
                     builder: (_, __) => const Text('inner'),
                   ),
                 ],
@@ -284,6 +338,67 @@ void main() {
       await _pumpRouter(tester, router);
       // User has 'user' role but 'admin' is required → unauthorized
       expect(find.text('unauthorized'), findsOneWidget);
+    });
+
+    testWidgets('shell meta is inherited and merged', (tester) async {
+      // Shell provides guardMeta with roles: ['admin'].
+      // Child has RoleGuard but no meta of its own — should use shell meta.
+      final router = GoRouter(
+        initialLocation: '/admin',
+        routes: [
+          GuardedShellRoute(
+            guards: [_SimpleAuthGuard(loggedIn: true)],
+            guardMeta: const GuardMeta({'roles': ['admin']}),
+            builder: (_, __, child) => child,
+            routes: [
+              GuardedRoute(
+                path: '/admin',
+                guards: [_SimpleRoleGuard(userRoles: {'admin'})],
+                // No guardMeta here — inherited from shell
+                builder: (_, __) => const Text('admin'),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/login',
+            builder: (_, __) => const Text('login'),
+          ),
+          GoRoute(
+            path: '/unauthorized',
+            builder: (_, __) => const Text('unauthorized'),
+          ),
+        ],
+      );
+      await _pumpRouter(tester, router);
+      // Shell meta provides roles, RoleGuard checks it, user has 'admin' → allow
+      expect(find.text('admin'), findsOneWidget);
+    });
+
+    testWidgets('plain GoRoute children are not affected', (tester) async {
+      // A plain GoRoute inside GuardedShellRoute should NOT inherit guards.
+      final router = GoRouter(
+        initialLocation: '/open',
+        routes: [
+          GuardedShellRoute(
+            guards: [_SimpleAuthGuard(loggedIn: false)],
+            builder: (_, __, child) => child,
+            routes: [
+              // Plain GoRoute — should NOT be affected by shell guards
+              GoRoute(
+                path: '/open',
+                builder: (_, __) => const Text('open'),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/login',
+            builder: (_, __) => const Text('login'),
+          ),
+        ],
+      );
+      await _pumpRouter(tester, router);
+      // Plain GoRoute ignores shell guards → renders normally
+      expect(find.text('open'), findsOneWidget);
     });
   });
 }

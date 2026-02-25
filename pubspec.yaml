@@ -1,6 +1,6 @@
 name: go_guardian
 description: NestJS-style declarative route guards for GoRouter. Declare guards at the route level, inherit through shells, compose with existing redirect logic.
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/vipinvkmenon/go_guardian
 
 environment:

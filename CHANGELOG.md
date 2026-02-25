@@ -1,3 +1,16 @@
+## 0.2.1
+
+### Bug Fixes
+
+- **`GuardedShellRoute` now actually propagates guards to child routes.** Previously, shell guards were stored as data but never evaluated on child `GuardedRoute`s. Guards are now reconstructed at construction time — shell guards are prepended to each child's own guards, and `GuardMeta` is merged. Nested shells accumulate correctly.
+- **`GuardedRoute.existingRedirect` is now a stored field**, so shell route reconstruction can recover it during guard propagation.
+
+### Improvements
+
+- Example app now has a working onboarding flow: login → OnboardingGuard redirects to `/onboarding` → complete → home.
+- Expanded test coverage for shell guard inheritance (7 new tests: inherit, allow, combine, nested, meta merge, plain GoRoute opt-out).
+- Removed dead `GuardRegistry` class (guard inheritance is now handled at construction time).
+
 ## 0.2.0
 
 ### Universal State Management Support
@@ -14,7 +27,7 @@
 
 ### Example
 
-- Clean multi-file example app demonstrating guard inheritance, DiscardedRoute, maintenance mode, and role-based access.
+- Comprehensive example app demonstrating all guard features: inheritance, onboarding flow, DiscardedRoute, maintenance mode, role-based access, custom guards, guard composition, and brownfield migration.
 
 ### Internal
 

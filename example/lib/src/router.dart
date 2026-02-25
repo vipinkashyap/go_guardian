@@ -29,7 +29,7 @@ final router = GoRouter(
   refreshListenable: refreshNotifier,
   routes: [
     // ── DiscardedRoute ──────────────────────────────────────────────
-    // Skips /login when already logged in.
+    // Skips /login when already logged in — inverse of a guard.
     DiscardedRoute.stateless(
       path: '/login',
       discardWhen: () => _auth.isLoggedIn,
@@ -37,7 +37,7 @@ final router = GoRouter(
       builder: (_, __) => const LoginScreen(),
     ),
 
-    // ── Standalone screens (no guards) ──────────────────────────────
+    // ── Standalone screens (outside the guarded shell) ──────────────
     GoRoute(
         path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
     GoRoute(
@@ -57,7 +57,6 @@ final router = GoRouter(
               body: 'MaintenanceGuard (priority -10) caught this first.\n'
                   'Toggle maintenance OFF from the home screen.',
               // No "Go home" button — it would redirect loop.
-              // User must toggle maintenance off from somewhere else.
               goTo: null,
               goLabel: null,
             )),
@@ -73,6 +72,9 @@ final router = GoRouter(
             )),
 
     // ── GuardedShellRoute — all children inherit these guards ───────
+    // Every GuardedRoute child automatically gets Maintenance + Auth +
+    // Onboarding guards prepended to its own guards at construction time.
+    // Plain GoRoute children (like /settings) opt out of inheritance.
     GuardedShellRoute(
       guards: [
         MaintenanceGuard.stateless(
@@ -83,10 +85,11 @@ final router = GoRouter(
       ],
       builder: (ctx, state, child) => AppShell(child: child),
       routes: [
-        // Basic — inherits shell guards only.
+        // Basic — inherits shell guards only (Auth, Onboarding, Maintenance).
         GuardedRoute(path: '/home', builder: (_, __) => const HomeScreen()),
 
         // ── RoleGuard + GuardMeta ───────────────────────────────────
+        // Inherits shell guards + adds RoleGuard.
         GuardedRoute(
           path: '/admin',
           guards: [
@@ -96,8 +99,8 @@ final router = GoRouter(
           builder: (_, __) => const AdminScreen(),
         ),
 
-        // ── Guard composition: & (AND) operator ─────────────────────
-        // Must be authenticated (inherited) AND premium.
+        // ── Custom guard (extends RouteGuard) ───────────────────────
+        // Inherits shell guards + adds PremiumGuard.
         GuardedRoute(
           path: '/premium',
           guards: [
@@ -107,7 +110,8 @@ final router = GoRouter(
         ),
 
         // ── GuardChain — brownfield migration ───────────────────────
-        // Wraps a legacy redirect with guards using GuardChain.
+        // Plain GoRoute: does NOT inherit shell guards.
+        // Uses GuardChain to wrap a legacy redirect with an AuthGuard.
         GoRoute(
           path: '/settings',
           redirect: GuardChain
@@ -118,8 +122,8 @@ final router = GoRouter(
           builder: (_, __) => const SettingsScreen(),
         ),
 
-        // ── Guard composition: | (OR) and ~ (NOT) operators ─────────
-        // Accessible if admin OR premium (shows OR operator).
+        // ── Guard composition: | (OR) operator ─────────────────────
+        // Inherits shell guards + accessible if admin OR premium.
         GuardedRoute(
           path: '/vip-lounge',
           guards: [

@@ -1,6 +1,6 @@
 # go_guardian example
 
-A runnable Flutter app demonstrating every go_guardian feature. Start as a guest and progressively unlock access — each tab showcases a different guard feature.
+A runnable Flutter app demonstrating every go_guardian feature. Start as a guest and progressively unlock access — each screen showcases a different guard feature.
 
 ## Running
 
@@ -8,17 +8,24 @@ A runnable Flutter app demonstrating every go_guardian feature. Start as a guest
 flutter run
 ```
 
+## Flow
+
+1. **Login** — `DiscardedRoute` skips this screen when already logged in
+2. **Onboarding** — `OnboardingGuard` (inherited from shell) redirects here after login
+3. **Home** — toggle controls to unlock Admin, Premium, VIP, and Maintenance
+4. **Navigate tabs** — each tab demonstrates a different guard feature
+
 ## What each screen demos
 
 | Tab / Screen | Feature |
 |---|---|
 | Login | `DiscardedRoute` + deep link `?continue=` banner |
-| Onboarding | `OnboardingGuard` redirect |
+| Onboarding | `OnboardingGuard` redirect (via shell guard inheritance) |
 | Home | Inherited shell guards, toggle controls, access status |
 | Admin | `RoleGuard` + `GuardMeta` |
 | Premium | Custom `PremiumGuard` (extends `RouteGuard` directly) |
 | VIP Lounge | Guard composition: `RoleGuard \| PremiumGuard` |
-| Settings | `GuardChain` brownfield migration |
+| Settings | `GuardChain` brownfield migration (plain `GoRoute` — opts out of shell inheritance) |
 | Maintenance | `MaintenanceGuard` (priority -10) |
 
 ## Structure
