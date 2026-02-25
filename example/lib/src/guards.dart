@@ -36,7 +36,7 @@ class PremiumGuard extends RouteGuard {
     GuardMeta meta,
   ) {
     final isPremium = _contextCheck != null
-        ? _contextCheck!(context)
+        ? _contextCheck(context)
         : _statelessCheck!();
     if (isPremium) return null;
     return redirectTo;

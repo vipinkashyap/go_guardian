@@ -1,3 +1,10 @@
+## 0.2.3
+
+### Improvements
+
+- Updated go_router dependency
+
+
 ## 0.2.2
 
 ### Improvements
