@@ -2,25 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:go_guardian/go_guardian.dart';
-
-// ---------------------------------------------------------------------------
-// Test helpers — stateless guards
-// ---------------------------------------------------------------------------
-
-class _StatelessAllowGuard extends RouteGuard {
-  @override
-  FutureOr<String?> check(BuildContext context, GoRouterState state, GuardMeta meta) => null;
-}
-
-class _StatelessDenyGuard extends RouteGuard {
-  _StatelessDenyGuard(this.redirectTo);
-  final String redirectTo;
-
-  @override
-  FutureOr<String?> check(BuildContext context, GoRouterState state, GuardMeta meta) => redirectTo;
-}
 
 /// Helper to pump a router in widget tests.
 Future<void> _pumpRouter(WidgetTester tester, GoRouter router) async {
