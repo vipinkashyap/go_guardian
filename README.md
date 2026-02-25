@@ -12,7 +12,7 @@ GuardedRoute(
 )
 ```
 
-> **[Full documentation &rarr;](https://vipinvkmenon.github.io/go_guardian/)**
+> **[Full documentation &rarr;](https://github.com/vipinkashyap/go_guardian/)**
 
 ---
 

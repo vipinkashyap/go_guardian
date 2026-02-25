@@ -1,3 +1,9 @@
+## 0.2.2
+
+### Improvements
+
+- Updated github links to documentation
+
 ## 0.2.1
 
 ### Bug Fixes
